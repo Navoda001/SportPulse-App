@@ -9,7 +9,7 @@ const index = () => {
                 color:"red",
                 fontSize:27,
             }}>
-                index
+                hi
             </Text>
         </View>
     );

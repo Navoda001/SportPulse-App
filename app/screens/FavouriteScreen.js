@@ -1,7 +1,6 @@
 import React from "react";
 import { View, FlatList, Text, StyleSheet, TouchableOpacity } from "react-native";
 import ItemCard from "../components/ItemCard";
-import Header from "../components/Header";
 import { useSelector, useDispatch } from "react-redux";
 import { removeFavourite } from "../redux/slices/favouritesSlice";
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,8 +18,6 @@ export default function FavouritesScreen({ navigation }) {
         style={styles.gradientBg}
       />
 
-      <Header />
-
       {favourites.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyBox}>
@@ -30,7 +27,7 @@ export default function FavouritesScreen({ navigation }) {
                 colors={['rgba(0, 123, 255, 0.2)', 'rgba(0, 210, 106, 0.2)']}
                 style={styles.emptyIconBg}
               >
-                <Feather name="heart" size={48} color="#4B5563" />
+                <Feather name="heart" size={48} color="#79818dff" />
               </LinearGradient>
             </View>
 
@@ -135,6 +132,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000814',
+    paddingTop: 50,
   },
   gradientBg: {
     position: 'absolute',
@@ -178,7 +176,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: '#4B5563',
+    color: '#79818dff',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 32,
@@ -226,7 +224,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#4B5563',
+    color: '#79818dff',
   },
   statsBadge: {
     borderRadius: 20,

@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, ScrollView, Image, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { addFavourite, removeFavourite } from "../redux/slices/favouritesSlice";
-import { LinearGradient } from 'expo-linear-gradient';
-import { Feather } from "@expo/vector-icons";
+import themeConfig from "../redux/themeConfig";
 
 const { width } = Dimensions.get('window');
 
@@ -12,6 +13,9 @@ export default function DetailsScreen({ route, navigation }) {
   const favourites = useSelector(s => s.favourites);
   const dispatch = useDispatch();
   const isFav = !!favourites.find(p => p.idPlayer === item.idPlayer);
+  const theme = useSelector((state) => state.theme.mode);
+  const currentTheme = themeConfig[theme];
+  const styles = createStyles(currentTheme, theme, width);
 
   const toggleFav = () => {
     if (isFav) dispatch(removeFavourite(item)); 
@@ -29,7 +33,7 @@ export default function DetailsScreen({ route, navigation }) {
     <View style={styles.container}>
       {/* Gradient Background */}
       <LinearGradient
-        colors={['#0A1A2F', '#000814']}
+        colors={currentTheme.gradient}
         style={styles.gradientBg}
       />
 
@@ -47,7 +51,10 @@ export default function DetailsScreen({ route, navigation }) {
                 resizeMode="cover"
               />
               <LinearGradient
-                colors={['transparent', 'rgba(0, 8, 20, 0.9)']}
+                colors={theme === "dark"
+                  ? ['transparent', 'rgba(0, 8, 20, 0.9)']
+                  : ['transparent', 'rgba(249, 250, 251, 0.95)']
+                }
                 style={styles.imageGradient}
               />
               
@@ -59,7 +66,7 @@ export default function DetailsScreen({ route, navigation }) {
                   activeOpacity={0.8}
                 >
                   <View style={styles.actionButtonBg}>
-                    <Feather name="arrow-left" size={20} color="#E5E7EB" />
+                    <Feather name="arrow-left" size={20} color={currentTheme.text} />
                   </View>
                 </TouchableOpacity>
 
@@ -68,7 +75,7 @@ export default function DetailsScreen({ route, navigation }) {
                   activeOpacity={0.8}
                 >
                   <View style={styles.actionButtonBg}>
-                    <Feather name="share-2" size={20} color="#E5E7EB" />
+                    <Feather name="share-2" size={20} color={currentTheme.text} />
                   </View>
                 </TouchableOpacity>
               </View>
@@ -76,7 +83,10 @@ export default function DetailsScreen({ route, navigation }) {
           ) : (
             <View style={styles.noImageContainer}>
               <LinearGradient
-                colors={['#007BFF', '#00D26A']}
+                colors={theme === "dark"
+                  ? ['#007BFF', '#00D26A']
+                  : ['#3B82F6', '#FF9F40']
+                }
                 style={styles.noImageGradient}
               >
                 <Feather name="user" size={64} color="#FFFFFF" />
@@ -106,14 +116,16 @@ export default function DetailsScreen({ route, navigation }) {
               <LinearGradient
                 colors={isFav 
                   ? ['#22C55E', '#00D26A']
-                  : ['rgba(0, 123, 255, 0.2)', 'rgba(0, 210, 106, 0.2)']
+                  : theme === "dark"
+                    ? ['rgba(0, 123, 255, 0.2)', 'rgba(0, 210, 106, 0.2)']
+                    : ['rgba(59, 130, 246, 0.2)', 'rgba(255, 159, 64, 0.2)']
                 }
                 style={styles.favoriteGradient}
               >
                 <Feather 
                   name={isFav ? "heart" : "heart"} 
                   size={24} 
-                  color={isFav ? "#FFFFFF" : "#E5E7EB"}
+                  color={isFav ? "#FFFFFF" : currentTheme.text}
                   fill={isFav ? "#FFFFFF" : "transparent"}
                 />
               </LinearGradient>
@@ -126,7 +138,7 @@ export default function DetailsScreen({ route, navigation }) {
               {playerInfo.map((info, index) => (
                 <View key={index} style={styles.infoCard}>
                   <View style={styles.infoIconWrapper}>
-                    <Feather name={info.icon} size={18} color="#007BFF" />
+                    <Feather name={info.icon} size={18} color={currentTheme.secondaryIcon} />
                   </View>
                   <Text style={styles.infoLabel}>{info.label}</Text>
                   <Text style={styles.infoValue}>{info.value}</Text>
@@ -145,7 +157,7 @@ export default function DetailsScreen({ route, navigation }) {
                 </Text>
               ) : (
                 <View style={styles.noDescription}>
-                  <Feather name="info" size={20} color="#79818dff" />
+                  <Feather name="info" size={20} color={currentTheme.secondaryText} />
                   <Text style={styles.noDescriptionText}>
                     No description available for this player
                   </Text>
@@ -161,14 +173,14 @@ export default function DetailsScreen({ route, navigation }) {
               <View style={styles.statsRow}>
                 {item.strHeight && (
                   <View style={styles.statBox}>
-                    <Feather name="trending-up" size={20} color="#00D26A" />
+                    <Feather name="trending-up" size={20} color={theme === "dark" ? "#00D26A" : "#FF9F40"} />
                     <Text style={styles.statLabel}>Height</Text>
                     <Text style={styles.statValue}>{item.strHeight}</Text>
                   </View>
                 )}
                 {item.strWeight && (
                   <View style={styles.statBox}>
-                    <Feather name="activity" size={20} color="#007BFF" />
+                    <Feather name="activity" size={20} color={currentTheme.secondaryIcon} />
                     <Text style={styles.statLabel}>Weight</Text>
                     <Text style={styles.statValue}>{item.strWeight}</Text>
                   </View>
@@ -184,17 +196,17 @@ export default function DetailsScreen({ route, navigation }) {
               <View style={styles.socialButtons}>
                 {item.strFacebook && (
                   <TouchableOpacity style={styles.socialButton}>
-                    <Feather name="facebook" size={20} color="#007BFF" />
+                    <Feather name="facebook" size={20} color={currentTheme.secondaryIcon} />
                   </TouchableOpacity>
                 )}
                 {item.strTwitter && (
                   <TouchableOpacity style={styles.socialButton}>
-                    <Feather name="twitter" size={20} color="#18E7F2" />
+                    <Feather name="twitter" size={20} color={currentTheme.icon} />
                   </TouchableOpacity>
                 )}
                 {item.strInstagram && (
                   <TouchableOpacity style={styles.socialButton}>
-                    <Feather name="instagram" size={20} color="#00D26A" />
+                    <Feather name="instagram" size={20} color={theme === "dark" ? "#00D26A" : "#FF9F40"} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -206,11 +218,11 @@ export default function DetailsScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme, mode, width) => StyleSheet.create({
   container: {
     paddingTop: 50,
     flex: 1,
-    backgroundColor: '#000814',
+    backgroundColor: theme.secondaryBackground,
   },
   gradientBg: {
     position: 'absolute',
@@ -257,20 +269,27 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   actionButtonBg: {
-    backgroundColor: 'rgba(10, 26, 47, 0.8)',
+    backgroundColor: mode === "dark"
+      ? 'rgba(10, 26, 47, 0.8)'
+      : 'rgba(255, 255, 255, 0.95)',
     width: 44,
     height: 44,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(75, 85, 99, 0.3)',
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryText + '40',
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: mode === "dark" ? 0.2 : 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   noImageContainer: {
     height: 300,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(10, 26, 47, 0.5)',
+    backgroundColor: theme.secondaryBackground,
   },
   noImageGradient: {
     width: 140,
@@ -296,12 +315,12 @@ const styles = StyleSheet.create({
   playerName: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.text,
     marginBottom: 4,
   },
   nickname: {
     fontSize: 16,
-    color: '#79818dff',
+    color: theme.secondaryText,
     fontStyle: 'italic',
   },
   favoriteButton: {
@@ -318,8 +337,8 @@ const styles = StyleSheet.create({
     height: 56,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(75, 85, 99, 0.3)',
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryText + '40',
   },
   infoGrid: {
     flexDirection: 'row',
@@ -330,25 +349,30 @@ const styles = StyleSheet.create({
   infoCard: {
     flex: 1,
     minWidth: (width - 52) / 2,
-    backgroundColor: 'rgba(10, 26, 47, 0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 123, 255, 0.2)',
+    backgroundColor: theme.secondaryBackground,
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryIcon + '30',
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: mode === "dark" ? 0.1 : 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   infoIconWrapper: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+    backgroundColor: theme.secondaryIcon + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
   },
   infoLabel: {
     fontSize: 11,
-    color: '#79818dff',
+    color: theme.secondaryText,
     marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -356,7 +380,7 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#E5E7EB',
+    color: theme.text,
     textAlign: 'center',
   },
   descriptionSection: {
@@ -365,19 +389,24 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.text,
     marginBottom: 12,
   },
   descriptionCard: {
-    backgroundColor: 'rgba(10, 26, 47, 0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 123, 255, 0.2)',
+    backgroundColor: theme.secondaryBackground,
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryIcon + '30',
     borderRadius: 16,
     padding: 20,
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: mode === "dark" ? 0.1 : 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   descriptionText: {
     fontSize: 14,
-    color: '#E5E7EB',
+    color: theme.text,
     lineHeight: 22,
   },
   noDescription: {
@@ -388,7 +417,7 @@ const styles = StyleSheet.create({
   noDescriptionText: {
     flex: 1,
     fontSize: 14,
-    color: '#79818dff',
+    color: theme.secondaryText,
   },
   statsSection: {
     marginBottom: 24,
@@ -399,23 +428,28 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    backgroundColor: 'rgba(10, 26, 47, 0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 123, 255, 0.2)',
+    backgroundColor: theme.secondaryBackground,
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryIcon + '30',
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: mode === "dark" ? 0.1 : 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   statLabel: {
     fontSize: 12,
-    color: '#79818dff',
+    color: theme.secondaryText,
     marginTop: 8,
     marginBottom: 4,
   },
   statValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.text,
   },
   socialSection: {
     marginBottom: 24,
@@ -426,11 +460,16 @@ const styles = StyleSheet.create({
   },
   socialButton: {
     flex: 1,
-    backgroundColor: 'rgba(10, 26, 47, 0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 123, 255, 0.2)',
+    backgroundColor: theme.secondaryBackground,
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryIcon + '30',
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: mode === "dark" ? 0.1 : 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
 });

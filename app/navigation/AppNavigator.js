@@ -1,7 +1,7 @@
+import React from "react";
 import { Feather } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React from "react";
 import { useSelector } from "react-redux";
 import { View, StyleSheet, Platform } from "react-native";
 import DetailsScreen from "../screens/DetailsScreen";
@@ -10,28 +10,34 @@ import HomeScreen from "../screens/HomeScreen";
 import LoginScreen from "../screens/LoginScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import RegisterScreen from "../screens/RegisterScreen";
+import themeConfig from "../redux/themeConfig";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 function Tabs() {
+  const theme = useSelector((state) => state.theme.mode);
+  const currentTheme = themeConfig[theme];
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#00D26A",
-        tabBarInactiveTintColor: "#79818dff",
+        tabBarActiveTintColor: theme === "dark" ? "#00D26A" : "#FF9F40",
+        tabBarInactiveTintColor: currentTheme.secondaryText,
         tabBarStyle: {
-          backgroundColor: "#0A1A2F",
-          borderTopWidth: 1,
-          borderTopColor: "rgba(0, 123, 255, 0.2)",
+          backgroundColor: currentTheme.secondaryBackground,
+          borderTopWidth: theme === "dark" ? 1 : 2,
+          borderTopColor: theme === "dark" 
+            ? "rgba(0, 123, 255, 0.2)"
+            : currentTheme.secondaryIcon + '30',
           height: Platform.OS === "ios" ? 88 : 65,
           paddingBottom: Platform.OS === "ios" ? 28 : 10,
           paddingTop: 10,
-          elevation: 0,
-          shadowColor: "#007BFF",
+          elevation: theme === "dark" ? 0 : 8,
+          shadowColor: currentTheme.secondaryIcon,
           shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
+          shadowOpacity: theme === "dark" ? 0.1 : 0.15,
           shadowRadius: 12,
         },
         tabBarLabelStyle: {
@@ -48,11 +54,10 @@ function Tabs() {
           if (route.name === "Favourites") iconName = "heart";
           if (route.name === "Profile") iconName = "user";
 
+          const styles = createTabStyles(currentTheme, theme, focused);
+
           return (
-            <View style={[
-              styles.iconContainer,
-              focused && styles.iconContainerActive
-            ]}>
+            <View style={styles.iconContainer}>
               <Feather 
                 name={iconName} 
                 size={focused ? 24 : 22} 
@@ -76,7 +81,7 @@ function Tabs() {
         component={FavouritesScreen}
         options={{
           tabBarLabel: "Favorites",
-          tabBarBadge: undefined, // You can add badge count here dynamically
+          tabBarBadge: undefined,
         }}
       />
       <Tab.Screen 
@@ -91,15 +96,16 @@ function Tabs() {
 }
 
 export default function AppNavigator() {
-  const theme = useSelector(state => state.theme.mode);
-  const isAuthenticated = useSelector(state => state.auth.user);
+  const theme = useSelector((state) => state.theme.mode);
+  const isAuthenticated = useSelector((state) => state.auth.user);
+  const currentTheme = themeConfig[theme];
 
   return (
     <Stack.Navigator 
       screenOptions={{ 
         headerShown: false,
         contentStyle: {
-          backgroundColor: "#000814"
+          backgroundColor: currentTheme.secondaryBackground
         },
         animation: "fade_from_bottom",
       }}
@@ -144,7 +150,7 @@ export default function AppNavigator() {
   );
 }
 
-const styles = StyleSheet.create({
+const createTabStyles = (theme, mode, focused) => StyleSheet.create({
   iconContainer: {
     position: "relative",
     alignItems: "center",
@@ -153,12 +159,9 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 12,
   },
-  iconContainerActive: {
-    backgroundColor: "rgba(0, 210, 106, 0.1)",
-  },
   activeIndicator: {
     position: "absolute",
-    borderRadius: 2,
-    backgroundColor: "#00D26A",
+    bottom: -8,
+    height: 3,
   },
 });

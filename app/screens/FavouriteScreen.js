@@ -1,20 +1,24 @@
 import React from "react";
-import { View, FlatList, Text, StyleSheet, TouchableOpacity } from "react-native";
-import ItemCard from "../components/ItemCard";
-import { useSelector, useDispatch } from "react-redux";
-import { removeFavourite } from "../redux/slices/favouritesSlice";
-import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import ItemCard from "../components/ItemCard";
+import { removeFavourite } from "../redux/slices/favouritesSlice";
+import themeConfig from "../redux/themeConfig";
 
 export default function FavouritesScreen({ navigation }) {
   const favourites = useSelector(s => s.favourites);
   const dispatch = useDispatch();
+  const theme = useSelector((state) => state.theme.mode);
+  const currentTheme = themeConfig[theme];
+  const styles = createStyles(currentTheme, theme);
 
   return (
     <View style={styles.container}>
       {/* Gradient Background */}
       <LinearGradient
-        colors={['#0A1A2F', '#000814']}
+        colors={currentTheme.gradient}
         style={styles.gradientBg}
       />
 
@@ -24,10 +28,13 @@ export default function FavouritesScreen({ navigation }) {
             {/* Empty State Illustration */}
             <View style={styles.emptyIconWrapper}>
               <LinearGradient
-                colors={['rgba(0, 123, 255, 0.2)', 'rgba(0, 210, 106, 0.2)']}
+                colors={theme === "dark"
+                  ? ['rgba(0, 123, 255, 0.2)', 'rgba(0, 210, 106, 0.2)']
+                  : ['rgba(59, 130, 246, 0.2)', 'rgba(255, 159, 64, 0.2)']
+                }
                 style={styles.emptyIconBg}
               >
-                <Feather name="heart" size={48} color="#79818dff" />
+                <Feather name="heart" size={48} color={currentTheme.secondaryText} />
               </LinearGradient>
             </View>
 
@@ -44,7 +51,10 @@ export default function FavouritesScreen({ navigation }) {
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={['#007BFF', '#00D26A']}
+                colors={theme === "dark"
+                  ? ['#007BFF', '#00D26A']
+                  : ['#3B82F6', '#FF9F40']
+                }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.emptyButtonGradient}
@@ -70,7 +80,10 @@ export default function FavouritesScreen({ navigation }) {
               {/* Stats Badge */}
               <View style={styles.statsBadge}>
                 <LinearGradient
-                  colors={['#007BFF', '#00D26A']}
+                  colors={theme === "dark"
+                    ? ['#007BFF', '#00D26A']
+                    : ['#3B82F6', '#FF9F40']
+                  }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.statsBadgeGradient}
@@ -85,21 +98,21 @@ export default function FavouritesScreen({ navigation }) {
             <View style={styles.quickActions}>
               <TouchableOpacity style={styles.actionButton}>
                 <View style={styles.actionIcon}>
-                  <Feather name="grid" size={16} color="#007BFF" />
+                  <Feather name="grid" size={16} color={currentTheme.secondaryIcon} />
                 </View>
                 <Text style={styles.actionText}>Grid View</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionButton}>
                 <View style={styles.actionIcon}>
-                  <Feather name="filter" size={16} color="#00D26A" />
+                  <Feather name="filter" size={16} color={currentTheme.icon} />
                 </View>
                 <Text style={styles.actionText}>Filter</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.actionButton}>
                 <View style={styles.actionIcon}>
-                  <Feather name="share-2" size={16} color="#18E7F2" />
+                  <Feather name="share-2" size={16} color={currentTheme.secondaryIcon} />
                 </View>
                 <Text style={styles.actionText}>Share</Text>
               </TouchableOpacity>
@@ -128,10 +141,10 @@ export default function FavouritesScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme, mode) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000814',
+    backgroundColor: theme.secondaryBackground,
     paddingTop: 50,
   },
   gradientBg: {
@@ -149,12 +162,19 @@ const styles = StyleSheet.create({
   },
   emptyBox: {
     alignItems: 'center',
-    backgroundColor: 'rgba(10, 26, 47, 0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 123, 255, 0.2)',
+    backgroundColor: theme.secondaryBackground,
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: mode === "dark"
+      ? 'rgba(0, 123, 255, 0.2)'
+      : theme.secondaryIcon + '40',
     borderRadius: 32,
     padding: 40,
     maxWidth: 360,
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: mode === "dark" ? 0.2 : 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   emptyIconWrapper: {
     marginBottom: 24,
@@ -166,17 +186,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(75, 85, 99, 0.3)',
+    borderColor: theme.secondaryText + '40',
   },
   emptyTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.text,
     marginBottom: 12,
   },
   emptyText: {
     fontSize: 14,
-    color: '#79818dff',
+    color: theme.secondaryText,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 32,
@@ -184,7 +204,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#007BFF',
+    shadowColor: theme.secondaryIcon,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -219,17 +239,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.text,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#79818dff',
+    color: theme.secondaryText,
   },
   statsBadge: {
     borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#007BFF',
+    shadowColor: theme.secondaryIcon,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -255,9 +275,9 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(10, 26, 47, 0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(75, 85, 99, 0.3)',
+    backgroundColor: theme.secondaryBackground,
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryText + '40',
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -267,13 +287,13 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+    backgroundColor: theme.secondaryIcon + '20',
     justifyContent: 'center',
     alignItems: 'center',
   },
   actionText: {
     fontSize: 13,
-    color: '#E5E7EB',
+    color: theme.text,
     fontWeight: '500',
   },
   listContent: {

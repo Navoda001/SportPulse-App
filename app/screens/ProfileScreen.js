@@ -1,21 +1,25 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Image,
-} from "react-native";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../redux/slices/authSlice";
-import { LinearGradient } from "expo-linear-gradient";
 import { Feather } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/slices/authSlice";
+import themeConfig from "../redux/themeConfig";
 
 export default function ProfileScreen({ navigation }) {
   const user = useSelector((s) => s.auth.user);
   const favourites = useSelector((s) => s.favourites);
   const dispatch = useDispatch();
+  const theme = useSelector((state) => state.theme.mode);
+  const currentTheme = themeConfig[theme];
+  const styles = createStyles(currentTheme, theme);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -29,24 +33,24 @@ export default function ProfileScreen({ navigation }) {
   ];
 
   const settingsOptions = [
-    { label: "Edit Profile", icon: "edit-2", color: "#007BFF" },
-    { label: "Notifications", icon: "bell", color: "#00D26A" },
-    { label: "Privacy", icon: "shield", color: "#18E7F2" },
-    { label: "Help & Support", icon: "help-circle", color: "#007BFF" },
+    { label: "Edit Profile", icon: "edit-2" },
+    { label: "Notifications", icon: "bell" },
+    { label: "Privacy", icon: "shield" },
+    { label: "Help & Support", icon: "help-circle" },
   ];
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={["#0A1A2F", "#000814"]}
-        style={styles.gradientBg}
-      />
+      <LinearGradient colors={currentTheme.gradient} style={styles.gradientBg} />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <LinearGradient
-            colors={["rgba(0, 123, 255, 0.2)", "rgba(0, 210, 106, 0.2)"]}
+            colors={theme === "dark"
+              ? ["rgba(0, 123, 255, 0.2)", "rgba(0, 210, 106, 0.2)"]
+              : ["rgba(59, 130, 246, 0.3)", "rgba(255, 159, 64, 0.3)"]
+            }
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.cardGradientBorder}
@@ -55,7 +59,6 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.profileHeader}>
             <View style={styles.avatarWrapper}>
               {user?.image ? (
-                // Show user image if available
                 <View style={styles.profileAvatar}>
                   <Image
                     source={{ uri: user.image }}
@@ -63,24 +66,27 @@ export default function ProfileScreen({ navigation }) {
                     resizeMode="cover"
                   />
                   <LinearGradient
-                    colors={["transparent", "rgba(0, 123, 255, 0.3)"]}
+                    colors={theme === "dark"
+                      ? ["transparent", "rgba(0, 123, 255, 0.3)"]
+                      : ["transparent", "rgba(59, 130, 246, 0.2)"]
+                    }
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0, y: 1 }}
                     style={styles.profileAvatarGradientOverlay}
                   />
                 </View>
               ) : (
-                // Fallback to initials if no image
                 <LinearGradient
-                  colors={["#007BFF", "#00D26A"]}
+                  colors={theme === "dark"
+                    ? ["#007BFF", "#00D26A"]
+                    : ["#3B82F6", "#FF9F40"]
+                  }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.profileAvatar}
                 >
                   <Text style={styles.avatarText}>
-                    {user?.username
-                      ? user.username.charAt(0).toUpperCase()
-                      : "U"}
+                    {user?.username ? user.username.charAt(0).toUpperCase() : "U"}
                   </Text>
                 </LinearGradient>
               )}
@@ -97,7 +103,7 @@ export default function ProfileScreen({ navigation }) {
                 {user?.email || "No email provided"}
               </Text>
               <View style={styles.idBadge}>
-                <Feather name="hash" size={12} color="#79818dff" />
+                <Feather name="hash" size={12} color={currentTheme.secondaryText} />
                 <Text style={styles.idText}>{user?.username || "Guest User"}</Text>
               </View>
             </View>
@@ -108,7 +114,7 @@ export default function ProfileScreen({ navigation }) {
             {profileStats.map((stat, index) => (
               <View key={index} style={styles.statCard}>
                 <View style={styles.statIconWrapper}>
-                  <Feather name={stat.icon} size={18} color="#007BFF" />
+                  <Feather name={stat.icon} size={18} color={currentTheme.secondaryIcon} />
                 </View>
                 <Text style={styles.statValue}>{stat.value}</Text>
                 <Text style={styles.statLabel}>{stat.label}</Text>
@@ -127,27 +133,17 @@ export default function ProfileScreen({ navigation }) {
                 key={index}
                 style={[
                   styles.settingItem,
-                  index !== settingsOptions.length - 1 &&
-                    styles.settingItemBorder,
+                  index !== settingsOptions.length - 1 && styles.settingItemBorder,
                 ]}
                 activeOpacity={0.7}
               >
                 <View style={styles.settingLeft}>
-                  <View
-                    style={[
-                      styles.settingIcon,
-                      { backgroundColor: `${option.color}20` },
-                    ]}
-                  >
-                    <Feather
-                      name={option.icon}
-                      size={18}
-                      color={option.color}
-                    />
+                  <View style={styles.settingIcon}>
+                    <Feather name={option.icon} size={18} color={currentTheme.secondaryIcon} />
                   </View>
                   <Text style={styles.settingLabel}>{option.label}</Text>
                 </View>
-                <Feather name="chevron-right" size={20} color="#79818dff" />
+                <Feather name="chevron-right" size={20} color={currentTheme.secondaryText} />
               </TouchableOpacity>
             ))}
           </View>
@@ -160,12 +156,7 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.settingsCard}>
             <TouchableOpacity style={styles.settingItem} activeOpacity={0.7}>
               <View style={styles.settingLeft}>
-                <View
-                  style={[
-                    styles.settingIcon,
-                    { backgroundColor: "rgba(255, 193, 7, 0.2)" },
-                  ]}
-                >
+                <View style={styles.settingIconPremium}>
                   <Feather name="star" size={18} color="#FFC107" />
                 </View>
                 <Text style={styles.settingLabel}>Upgrade to Premium</Text>
@@ -199,10 +190,10 @@ export default function ProfileScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme, mode) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000814",
+    backgroundColor: theme.secondaryBackground,
     paddingTop: 50,
   },
   gradientBg: {
@@ -217,13 +208,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   profileCard: {
-    backgroundColor: "rgba(10, 26, 47, 0.5)",
+    backgroundColor: theme.secondaryBackground,
     borderRadius: 24,
     padding: 24,
     marginBottom: 24,
-    borderWidth: 1,
-    borderColor: "rgba(0, 123, 255, 0.2)",
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryIcon + '30',
     overflow: "hidden",
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: mode === "dark" ? 0.2 : 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   cardGradientBorder: {
     position: "absolute",
@@ -246,7 +242,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#007BFF",
+    shadowColor: theme.secondaryIcon,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
@@ -260,7 +256,7 @@ const styles = StyleSheet.create({
   profileAvatarImage: {
     width: "100%",
     height: "100%",
-    borderRadius: 50, // Same as profileAvatar borderRadius
+    borderRadius: 50,
   },
   profileAvatarGradientOverlay: {
     position: "absolute",
@@ -278,11 +274,11 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#007BFF",
+    backgroundColor: theme.secondaryIcon,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 3,
-    borderColor: "rgba(10, 26, 47, 0.5)",
+    borderColor: theme.secondaryBackground,
   },
   profileInfo: {
     alignItems: "center",
@@ -290,18 +286,18 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: theme.text,
     marginBottom: 4,
   },
   profileEmail: {
     fontSize: 14,
-    color: "#79818dff",
+    color: theme.secondaryText,
     marginBottom: 8,
   },
   idBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(75, 85, 99, 0.2)",
+    backgroundColor: theme.secondaryText + '30',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
@@ -309,7 +305,7 @@ const styles = StyleSheet.create({
   },
   idText: {
     fontSize: 12,
-    color: "#79818dff",
+    color: theme.secondaryText,
     fontWeight: "600",
   },
   statsGrid: {
@@ -319,9 +315,9 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: "rgba(0, 123, 255, 0.05)",
-    borderWidth: 1,
-    borderColor: "rgba(0, 123, 255, 0.2)",
+    backgroundColor: theme.secondaryIcon + '10',
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryIcon + '30',
     borderRadius: 16,
     padding: 16,
     alignItems: "center",
@@ -330,7 +326,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "rgba(0, 123, 255, 0.1)",
+    backgroundColor: theme.secondaryIcon + '20',
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 8,
@@ -338,12 +334,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: theme.text,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 11,
-    color: "#79818dff",
+    color: theme.secondaryText,
   },
   section: {
     marginBottom: 24,
@@ -351,16 +347,21 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: theme.text,
     marginBottom: 12,
     paddingHorizontal: 4,
   },
   settingsCard: {
-    backgroundColor: "rgba(10, 26, 47, 0.5)",
+    backgroundColor: theme.secondaryBackground,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(0, 123, 255, 0.2)",
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryIcon + '30',
     overflow: "hidden",
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: mode === "dark" ? 0.15 : 0.1,
+    shadowRadius: 8,
+    elevation: 2,
   },
   settingItem: {
     flexDirection: "row",
@@ -370,7 +371,7 @@ const styles = StyleSheet.create({
   },
   settingItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(75, 85, 99, 0.2)",
+    borderBottomColor: theme.secondaryText + '20',
   },
   settingLeft: {
     flexDirection: "row",
@@ -381,13 +382,23 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
+    backgroundColor: theme.secondaryIcon + '20',
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  settingIconPremium: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "rgba(255, 193, 7, 0.2)",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
   settingLabel: {
     fontSize: 15,
-    color: "#E5E7EB",
+    color: theme.text,
     fontWeight: "500",
   },
   premiumBadge: {
@@ -399,12 +410,12 @@ const styles = StyleSheet.create({
   premiumText: {
     fontSize: 11,
     fontWeight: "bold",
-    color: "#000814",
+    color: mode === "dark" ? "#000814" : "#1F2937",
   },
   logoutButton: {
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(239, 68, 68, 0.3)",
+    backgroundColor: "rgba(239, 68, 68, 0.5)",
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: "rgba(239, 68, 68, 0.5)",
     borderRadius: 16,
     padding: 18,
     marginBottom: 24,
@@ -426,11 +437,11 @@ const styles = StyleSheet.create({
   },
   appVersion: {
     fontSize: 12,
-    color: "#79818dff",
+    color: theme.secondaryText,
     marginBottom: 4,
   },
   appCopyright: {
     fontSize: 11,
-    color: "#79818dff",
+    color: theme.secondaryText,
   },
 });

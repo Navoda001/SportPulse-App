@@ -1,18 +1,24 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Image,
-} from "react-native";
-import { Formik } from "formik";
-import * as Yup from "yup";
 import { LinearGradient } from "expo-linear-gradient";
+import { Formik } from "formik";
+import {
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { useSelector } from "react-redux";
+import * as Yup from "yup";
+import themeConfig from "../redux/themeConfig";
 
 export default function RegisterScreen({ navigation }) {
+  const theme = useSelector((state) => state.theme.mode);
+  const currentTheme = themeConfig[theme];
+  const styles = createStyles(currentTheme, theme);
+
   const Schema = Yup.object().shape({
     username: Yup.string().required("Required"),
     password: Yup.string().min(4, "Too short").required("Required"),
@@ -22,10 +28,7 @@ export default function RegisterScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Gradient Background */}
-      <LinearGradient
-        colors={["#0A1A2F", "#000814"]}
-        style={styles.gradientBg}
-      />
+      <LinearGradient colors={currentTheme.gradient} style={styles.gradientBg} />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -42,7 +45,7 @@ export default function RegisterScreen({ navigation }) {
 
           <View style={styles.logoCircle}>
             <Image
-              source={require("../../assets/logo.png")} 
+              source={require("../../assets/logo.png")}
               style={styles.logoImage}
               resizeMode="contain"
             />
@@ -83,7 +86,7 @@ export default function RegisterScreen({ navigation }) {
                     <TextInput
                       style={styles.input}
                       placeholder="Choose a username"
-                      placeholderTextColor="#4B5563"
+                      placeholderTextColor={currentTheme.secondaryText}
                       onChangeText={handleChange("username")}
                       onBlur={handleBlur("username")}
                       value={values.username}
@@ -107,7 +110,7 @@ export default function RegisterScreen({ navigation }) {
                     <TextInput
                       style={styles.input}
                       placeholder="your.email@example.com"
-                      placeholderTextColor="#4B5563"
+                      placeholderTextColor={currentTheme.secondaryText}
                       onChangeText={handleChange("email")}
                       onBlur={handleBlur("email")}
                       value={values.email}
@@ -132,7 +135,7 @@ export default function RegisterScreen({ navigation }) {
                     <TextInput
                       style={styles.input}
                       placeholder="Create a strong password"
-                      placeholderTextColor="#4B5563"
+                      placeholderTextColor={currentTheme.secondaryText}
                       secureTextEntry
                       onChangeText={handleChange("password")}
                       onBlur={handleBlur("password")}
@@ -160,9 +163,14 @@ export default function RegisterScreen({ navigation }) {
                   style={styles.registerButton}
                   activeOpacity={0.8}
                 >
-                  <View style={styles.registerBackground}>
+                  <LinearGradient
+                    colors={["#007BFF", "#007BFF"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.registerGradient}
+                  >
                     <Text style={styles.registerText}>Create Account</Text>
-                  </View>
+                  </LinearGradient>
                 </TouchableOpacity>
 
                 {/* Login Link */}
@@ -202,10 +210,10 @@ export default function RegisterScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme, mode) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000814",
+    backgroundColor: theme.secondaryBackground,
   },
   gradientBg: {
     position: "absolute",
@@ -229,7 +237,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: "#18E7F2",
+    color: theme.icon,
     fontWeight: "500",
   },
   logoCircle: {
@@ -238,35 +246,39 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 16,
+    shadowColor: theme.secondaryIcon,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
+    shadowOpacity: mode === "dark" ? 0.5 : 0.3,
     shadowRadius: 16,
     elevation: 8,
   },
-
   logoImage: {
     width: "500%",
     height: "500%",
   },
-
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: theme.text,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: "#4B5563",
+    color: theme.secondaryText,
     letterSpacing: 0.5,
   },
   formContainer: {
-    backgroundColor: "rgba(10, 26, 47, 0.5)",
+    backgroundColor: theme.secondaryBackground,
     borderRadius: 24,
     padding: 24,
-    borderWidth: 1,
-    borderColor: "rgba(0, 123, 255, 0.2)",
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryIcon + '30',
     marginBottom: 24,
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: mode === "dark" ? 0.2 : 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   inputGroup: {
     marginBottom: 20,
@@ -274,33 +286,35 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#E5E7EB",
+    color: theme.text,
     marginBottom: 8,
   },
   inputWrapper: {
-    backgroundColor: "rgba(245, 247, 250, 0.05)",
+    backgroundColor: mode === "dark"
+      ? "rgba(245, 247, 250, 0.05)"
+      : theme.background,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(75, 85, 99, 0.3)",
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryText + '40',
   },
   inputError: {
-    borderColor: "#007BFF",
+    borderColor: theme.secondaryIcon,
   },
   input: {
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: "#E5E7EB",
+    color: theme.text,
   },
   errorText: {
     fontSize: 12,
-    color: "#007BFF",
+    color: theme.secondaryIcon,
     marginTop: 4,
     marginLeft: 4,
   },
   helperText: {
     fontSize: 12,
-    color: "#4B5563",
+    color: theme.secondaryText,
     marginTop: 4,
     marginLeft: 4,
   },
@@ -310,18 +324,18 @@ const styles = StyleSheet.create({
   },
   termsText: {
     fontSize: 12,
-    color: "#4B5563",
+    color: theme.secondaryText,
     lineHeight: 18,
     textAlign: "center",
   },
   termsLink: {
-    color: "#18E7F2",
+    color: theme.icon,
     fontWeight: "500",
   },
   registerButton: {
     borderRadius: 12,
     overflow: "hidden",
-    shadowColor: "#007BFF",
+    shadowColor: theme.secondaryIcon,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -344,10 +358,10 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontSize: 14,
-    color: "#E5E7EB",
+    color: theme.text,
   },
   loginLink: {
-    color: "#007BFF",
+    color: theme.secondaryIcon,
     fontWeight: "bold",
   },
   socialSection: {
@@ -361,12 +375,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "rgba(75, 85, 99, 0.3)",
+    backgroundColor: theme.secondaryText + '40',
   },
   dividerText: {
     marginHorizontal: 16,
     fontSize: 11,
-    color: "#4B5563",
+    color: theme.secondaryText,
     fontWeight: "600",
     letterSpacing: 0.5,
   },
@@ -376,24 +390,18 @@ const styles = StyleSheet.create({
   },
   socialButton: {
     flex: 1,
-    backgroundColor: "rgba(245, 247, 250, 0.05)",
-    borderWidth: 1,
-    borderColor: "rgba(75, 85, 99, 0.3)",
+    backgroundColor: mode === "dark"
+      ? "rgba(245, 247, 250, 0.05)"
+      : theme.background,
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: theme.secondaryText + '40',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: "center",
   },
   socialText: {
-    color: "#E5E7EB",
+    color: theme.text,
     fontSize: 14,
     fontWeight: "600",
   },
-  registerBackground: {
-  backgroundColor: "#007BFF",
-  paddingVertical: 12,
-  paddingHorizontal: 24,
-  borderRadius: 10,
-  alignItems: "center",
-}
-
 });

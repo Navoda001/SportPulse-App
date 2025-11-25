@@ -1,19 +1,32 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
-import { useSelector, useDispatch } from "react-redux";
-import { toggleTheme } from "../redux/slices/themeSlice";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleTheme } from "../redux/slices/themeSlice";
+import themeConfig from "../redux/themeConfig";
 
 export default function Header() {
   const user = useSelector((state) => state.auth.user);
   const theme = useSelector((state) => state.theme.mode);
   const dispatch = useDispatch();
+  const currentTheme = themeConfig[theme];
+  const styles = createStyles(currentTheme, theme);
 
   return (
     <View style={styles.container}>
       {/* Header Background with Gradient Border */}
       <View style={styles.headerCard}>
+        <LinearGradient
+          colors={theme === "dark" 
+            ? ['rgba(0, 123, 255, 0.2)', 'rgba(0, 210, 106, 0.2)']
+            : ['rgba(59, 130, 246, 0.3)', 'rgba(255, 159, 64, 0.3)']
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradientBorder}
+        />
+        
         <View style={styles.headerContent}>
           {/* Left Section - User Info */}
           <View style={styles.leftSection}>
@@ -26,7 +39,10 @@ export default function Header() {
                     resizeMode="cover"
                   />
                   <LinearGradient
-                    colors={["transparent", "rgba(0, 123, 255, 0.3)"]}
+                    colors={theme === "dark"
+                      ? ["transparent", "rgba(0, 123, 255, 0.3)"]
+                      : ["transparent", "rgba(59, 130, 246, 0.2)"]
+                    }
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0, y: 1 }}
                     style={styles.avatarGradientOverlay}
@@ -34,7 +50,10 @@ export default function Header() {
                 </View>
               ) : (
                 <LinearGradient
-                  colors={["#007BFF", "#00D26A"]}
+                  colors={theme === "dark"
+                    ? ["#007BFF", "#00D26A"]
+                    : ["#3B82F6", "#FF9F40"]
+                  }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.avatar}
@@ -52,7 +71,7 @@ export default function Header() {
             <View style={styles.userInfo}>
               <Text style={styles.greeting}>Welcome back</Text>
               <Text style={styles.username}>
-                Hi, {user?.firstName ? user.firstName +"  "+ user.lastName : "User"}
+                Hi, {user?.firstName ? user.firstName + " " + user.lastName : "User"}
               </Text>
             </View>
           </View>
@@ -66,17 +85,16 @@ export default function Header() {
               activeOpacity={0.7}
             >
               <LinearGradient
-                colors={
-                  theme === "dark"
-                    ? ["rgba(24, 231, 242, 0.2)", "rgba(0, 123, 255, 0.2)"]
-                    : ["rgba(0, 123, 255, 0.2)", "rgba(0, 210, 106, 0.2)"]
+                colors={theme === "dark"
+                  ? ["rgba(24, 231, 242, 0.2)", "rgba(0, 123, 255, 0.2)"]
+                  : ["rgba(255, 223, 186, 0.3)", "rgba(255, 159, 64, 0.2)"]
                 }
                 style={styles.iconGradient}
               >
                 <Feather
                   name={theme === "dark" ? "sun" : "moon"}
                   size={20}
-                  color={theme === "dark" ? "#18E7F2" : "#007BFF"}
+                  color={currentTheme.icon}
                 />
               </LinearGradient>
             </TouchableOpacity>
@@ -84,10 +102,13 @@ export default function Header() {
             {/* Notification Badge */}
             <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
               <LinearGradient
-                colors={["rgba(0, 123, 255, 0.2)", "rgba(0, 210, 106, 0.2)"]}
+                colors={theme === "dark"
+                  ? ["rgba(0, 123, 255, 0.2)", "rgba(0, 210, 106, 0.2)"]
+                  : ["rgba(59, 130, 246, 0.2)", "rgba(255, 159, 64, 0.2)"]
+                }
                 style={styles.iconGradient}
               >
-                <Feather name="bell" size={20} color="#E5E7EB" />
+                <Feather name="bell" size={20} color={currentTheme.secondaryIcon} />
                 <View style={styles.notificationBadge}>
                   <Text style={styles.notificationText}>3</Text>
                 </View>
@@ -100,21 +121,31 @@ export default function Header() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme, mode) => StyleSheet.create({
   container: {
     paddingTop: 50,
   },
   headerCard: {
-    backgroundColor: "rgba(10, 26, 47, 0.5)",
+    backgroundColor: theme.secondaryBackground,
     borderRadius: 20,
     overflow: "hidden",
+    marginHorizontal: 16,
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: mode === "dark" ? 0.2 : 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: mode === "dark" 
+      ? 'rgba(0, 123, 255, 0.2)'
+      : theme.secondaryIcon + '20',
   },
   gradientBorder: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: 2,
+    height: 3,
   },
   headerContent: {
     flexDirection: "row",
@@ -137,7 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#007BFF",
+    shadowColor: theme.secondaryIcon,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -171,20 +202,20 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: "#22C55E",
     borderWidth: 2,
-    borderColor: "rgba(10, 26, 47, 0.5)",
+    borderColor: theme.secondaryBackground,
   },
   userInfo: {
     flex: 1,
   },
   greeting: {
     fontSize: 14,
-    color: "#79818dff",
+    color: theme.secondaryText,
     marginBottom: 2,
   },
   username: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: theme.text,
   },
   rightSection: {
     flexDirection: "row",
@@ -201,7 +232,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(75, 85, 99, 0.3)",
+    borderColor: mode === "dark"
+      ? "rgba(75, 85, 99, 0.3)"
+      : theme.secondaryText + '30',
   },
   notificationBadge: {
     position: "absolute",
@@ -214,42 +247,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "rgba(10, 26, 47, 0.5)",
+    borderColor: theme.secondaryBackground,
   },
   notificationText: {
     fontSize: 10,
     fontWeight: "bold",
     color: "#FFFFFF",
-  },
-  brandSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-  },
-  logoWrapper: {
-    marginRight: 12,
-  },
-  logoGradient: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-  },
-  brandName: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    letterSpacing: 0.5,
-  },
-  brandTagline: {
-    fontSize: 11,
-    color: "#4B5563",
-    marginTop: -2,
   },
 });

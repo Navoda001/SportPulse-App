@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  FlatList,
-  ActivityIndicator,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
-import { getPlayers } from "../api/sportsApi";
-import ItemCard from "../components/ItemCard";
-import Header from "../components/Header";
-import { useSelector, useDispatch } from "react-redux";
-import { addFavourite, removeFavourite } from "../redux/slices/favouritesSlice";
 import { LinearGradient } from "expo-linear-gradient";
+import {
+    ActivityIndicator,
+    FlatList,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { getPlayers } from "../api/sportsApi";
+import Header from "../components/Header";
+import ItemCard from "../components/ItemCard";
+import { addFavourite, removeFavourite } from "../redux/slices/favouritesSlice";
+import themeConfig from "../redux/themeConfig";
 
 export default function HomeScreen({ navigation }) {
   const [players, setPlayers] = useState([]);
@@ -22,13 +23,15 @@ export default function HomeScreen({ navigation }) {
   const [searchFocused, setSearchFocused] = useState(false);
   const favourites = useSelector((s) => s.favourites);
   const dispatch = useDispatch();
+  const theme = useSelector((state) => state.theme.mode);
+  const currentTheme = themeConfig[theme];
 
-   const fetchPlayers = async () => {
-      setLoading(true);
-      const data = await getPlayers(team);
-      setPlayers(data);
-      setLoading(false);
-    };
+  const fetchPlayers = async () => {
+    setLoading(true);
+    const data = await getPlayers(team);
+    setPlayers(data);
+    setLoading(false);
+  };
 
   useEffect(() => {
     fetchPlayers();
@@ -40,13 +43,12 @@ export default function HomeScreen({ navigation }) {
     else dispatch(addFavourite(player));
   };
 
+  const styles = createStyles(currentTheme);
+
   return (
     <View style={styles.container}>
       {/* Gradient Background */}
-      <LinearGradient
-        colors={["#0A1A2F", "#000814"]}
-        style={styles.gradientBg}
-      />
+      <LinearGradient colors={currentTheme.gradient} style={styles.gradientBg} />
 
       <Header />
 
@@ -77,7 +79,7 @@ export default function HomeScreen({ navigation }) {
             <TextInput
               style={styles.searchInput}
               placeholder="Search team (e.g., Arsenal, Barcelona)"
-              placeholderTextColor="#79818dff"
+              placeholderTextColor={currentTheme.secondaryText}
               value={team}
               onChangeText={setTeam}
               onFocus={() => setSearchFocused(true)}
@@ -121,7 +123,7 @@ export default function HomeScreen({ navigation }) {
       {loading ? (
         <View style={styles.loadingContainer}>
           <View style={styles.loadingBox}>
-            <ActivityIndicator size="large" color="#007BFF" />
+            <ActivityIndicator size="large" color={currentTheme.secondaryIcon} />
             <Text style={styles.loadingText}>Loading players...</Text>
           </View>
         </View>
@@ -139,7 +141,7 @@ export default function HomeScreen({ navigation }) {
               onPress={() => setTeam("Arsenal")}
             >
               <LinearGradient
-                colors={["#007BFF", "#00D26A"]}
+                colors={theme === "dark" ? ["#007BFF", "#00D26A"] : ["#3B82F6", "#FF9F40"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.emptyButtonGradient}
@@ -176,10 +178,10 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000814",
+    backgroundColor: theme.secondaryBackground,
   },
   gradientBg: {
     position: "absolute",
@@ -199,7 +201,7 @@ const styles = StyleSheet.create({
   searchTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#007BFF",
+    color: theme.secondaryIcon,
     marginBottom: 12,
   },
   statsContainer: {
@@ -207,9 +209,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   statBadge: {
-    backgroundColor: "rgba(0, 123, 255, 0.1)",
+    backgroundColor: theme.secondaryIcon + "20",
     borderWidth: 1,
-    borderColor: "rgba(0, 123, 255, 0.3)",
+    borderColor: theme.secondaryIcon + "40",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -220,11 +222,11 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#007BFF",
+    color: theme.secondaryIcon,
   },
   statLabel: {
     fontSize: 12,
-    color: "#79818dff",
+    color: theme.secondaryText,
   },
   searchContainer: {
     marginBottom: 16,
@@ -232,16 +234,16 @@ const styles = StyleSheet.create({
   searchInputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(245, 247, 250, 0.05)",
-    borderWidth: 1,
-    borderColor: "rgba(75, 85, 99, 0.3)",
+    backgroundColor: theme.secondaryBackground,
+    borderWidth: 2,
+    borderColor: theme.secondaryText + "50",
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   searchInputFocused: {
-    borderColor: "#007BFF",
-    backgroundColor: "rgba(0, 123, 255, 0.05)",
+    borderColor: theme.secondaryIcon,
+    backgroundColor: theme.secondaryIcon + "10",
   },
   searchIcon: {
     fontSize: 18,
@@ -250,18 +252,18 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: "#E5E7EB",
+    color: theme.text,
   },
   clearButton: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "rgba(75, 85, 99, 0.3)",
+    backgroundColor: theme.secondaryText + "40",
     justifyContent: "center",
     alignItems: "center",
   },
   clearText: {
-    color: "#E5E7EB",
+    color: theme.text,
     fontSize: 14,
     fontWeight: "bold",
   },
@@ -271,20 +273,20 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    backgroundColor: "rgba(245, 247, 250, 0.05)",
-    borderWidth: 1,
-    borderColor: "rgba(75, 85, 99, 0.3)",
+    backgroundColor: theme.secondaryBackground,
+    borderWidth: 2,
+    borderColor: theme.secondaryText + "50",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
   chipActive: {
-    backgroundColor: "rgba(0, 210, 106, 0.1)",
+    backgroundColor: "#00D26A" + "20",
     borderColor: "#00D26A",
   },
   chipText: {
     fontSize: 13,
-    color: "#E5E7EB",
+    color: theme.text,
     fontWeight: "500",
   },
   chipTextActive: {
@@ -298,17 +300,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   loadingBox: {
-    backgroundColor: "rgba(10, 26, 47, 0.5)",
-    borderWidth: 1,
-    borderColor: "rgba(0, 123, 255, 0.2)",
+    backgroundColor: theme.secondaryBackground,
+    borderWidth: 2,
+    borderColor: theme.secondaryIcon + "40",
     borderRadius: 24,
     padding: 40,
     alignItems: "center",
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#E5E7EB",
+    color: theme.text,
     fontWeight: "500",
   },
   emptyContainer: {
@@ -318,13 +325,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyBox: {
-    backgroundColor: "rgba(10, 26, 47, 0.5)",
-    borderWidth: 1,
-    borderColor: "rgba(0, 123, 255, 0.2)",
+    backgroundColor: theme.secondaryBackground,
+    borderWidth: 2,
+    borderColor: theme.secondaryIcon + "40",
     borderRadius: 24,
     padding: 32,
     alignItems: "center",
     maxWidth: 320,
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   emptyIcon: {
     fontSize: 48,
@@ -333,12 +345,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: theme.text,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 14,
-    color: "#79818dff",
+    color: theme.secondaryText,
     textAlign: "center",
     lineHeight: 20,
     marginBottom: 24,
@@ -346,6 +358,11 @@ const styles = StyleSheet.create({
   emptyButton: {
     borderRadius: 12,
     overflow: "hidden",
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
   },
   emptyButtonGradient: {
     paddingHorizontal: 32,
@@ -362,7 +379,7 @@ const styles = StyleSheet.create({
   },
   resultsText: {
     fontSize: 14,
-    color: "#79818dff",
+    color: theme.secondaryText,
     marginBottom: 12,
     fontWeight: "500",
   },

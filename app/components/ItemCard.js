@@ -1,9 +1,15 @@
 import React from "react";
-import { TouchableOpacity, View, Text, Image, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useSelector } from "react-redux";
+import themeConfig from "../redux/themeConfig";
 
 export default function ItemCard({ item, onPress, onFavourite, isFav }) {
+  const theme = useSelector((state) => state.theme.mode);
+  const currentTheme = themeConfig[theme];
+  const styles = createStyles(currentTheme, theme);
+
   return (
     <TouchableOpacity 
       onPress={onPress} 
@@ -13,7 +19,10 @@ export default function ItemCard({ item, onPress, onFavourite, isFav }) {
       {/* Card Container with Gradient Border */}
       <View style={styles.cardInner}>
         <LinearGradient
-          colors={['rgba(0, 123, 255, 0.3)', 'rgba(0, 210, 106, 0.3)']}
+          colors={theme === "dark" 
+            ? ['rgba(0, 123, 255, 0.3)', 'rgba(0, 210, 106, 0.3)']
+            : ['rgba(59, 130, 246, 0.4)', 'rgba(255, 159, 64, 0.4)']
+          }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.gradientBorder}
@@ -30,14 +39,20 @@ export default function ItemCard({ item, onPress, onFavourite, isFav }) {
               />
               {/* Gradient Overlay */}
               <LinearGradient
-                colors={['transparent', 'rgba(10, 26, 47, 0.8)']}
+                colors={theme === "dark"
+                  ? ["transparent", "rgba(10, 26, 47, 0.9)"]
+                  : ["transparent", "rgba(249, 250, 251, 0.95)"]
+                }
                 style={styles.imageGradient}
               />
             </>
           ) : (
             <View style={styles.noImageContainer}>
               <LinearGradient
-                colors={['#007BFF', '#00D26A']}
+                colors={theme === "dark" 
+                  ? ['#007BFF', '#00D26A']
+                  : ['#3B82F6', '#FF9F40']
+                }
                 style={styles.noImageGradient}
               >
                 <Feather name="user" size={32} color="#FFFFFF" />
@@ -59,7 +74,7 @@ export default function ItemCard({ item, onPress, onFavourite, isFav }) {
               <Feather 
                 name="heart" 
                 size={18} 
-                color={isFav ? "#FFFFFF" : "#E5E7EB"} 
+                color={isFav ? "#FFFFFF" : currentTheme.text} 
                 fill={isFav ? "#FFFFFF" : "transparent"}
               />
             </View>
@@ -79,12 +94,12 @@ export default function ItemCard({ item, onPress, onFavourite, isFav }) {
               {item.strNationality ? (
                 <View style={styles.infoRow}>
                   <View style={styles.infoBadge}>
-                    <Feather name="globe" size={12} color="#79818dff" />
+                    <Feather name="globe" size={12} color={currentTheme.secondaryIcon} />
                     <Text style={styles.infoText}>{item.strNationality}</Text>
                   </View>
                   {item.strPosition && (
                     <View style={styles.infoBadge}>
-                      <Feather name="target" size={12} color="#79818dff" />
+                      <Feather name="target" size={12} color={currentTheme.secondaryIcon} />
                       <Text style={styles.infoText}>{item.strPosition}</Text>
                     </View>
                   )}
@@ -98,7 +113,7 @@ export default function ItemCard({ item, onPress, onFavourite, isFav }) {
               {/* Team Badge if available */}
               {item.strTeam && (
                 <View style={styles.teamBadge}>
-                  <Feather name="users" size={10} color="#007BFF" />
+                  <Feather name="users" size={10} color={currentTheme.secondaryIcon} />
                   <Text style={styles.teamText}>{item.strTeam}</Text>
                 </View>
               )}
@@ -107,10 +122,13 @@ export default function ItemCard({ item, onPress, onFavourite, isFav }) {
             {/* Action Button */}
             <TouchableOpacity style={styles.actionButton}>
               <LinearGradient
-                colors={['rgba(0, 123, 255, 0.2)', 'rgba(0, 210, 106, 0.2)']}
+                colors={theme === "dark"
+                  ? ['rgba(0, 123, 255, 0.2)', 'rgba(0, 210, 106, 0.2)']
+                  : ['rgba(59, 130, 246, 0.15)', 'rgba(255, 159, 64, 0.15)']
+                }
                 style={styles.actionButtonGradient}
               >
-                <Feather name="chevron-right" size={20} color="#00D26A" />
+                <Feather name="chevron-right" size={20} color={currentTheme.icon} />
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -120,36 +138,42 @@ export default function ItemCard({ item, onPress, onFavourite, isFav }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme, mode) => StyleSheet.create({
   card: {
     marginBottom: 16,
     borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: '#007BFF',
+    shadowColor: theme.secondaryIcon,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: mode === "dark" ? 0.1 : 0.15,
     shadowRadius: 12,
     elevation: 4,
   },
   cardInner: {
-    backgroundColor: 'rgba(10, 26, 47, 0.5)',
+    backgroundColor: mode === "dark" 
+      ? 'rgba(10, 26, 47, 0.5)' 
+      : theme.background,
     borderRadius: 20,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 123, 255, 0.2)',
+    borderWidth: mode === "dark" ? 1 : 2,
+    borderColor: mode === "dark"
+      ? 'rgba(0, 123, 255, 0.2)'
+      : theme.secondaryIcon + '30',
   },
   gradientBorder: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 2,
+    height: 3,
   },
   imageContainer: {
     position: 'relative',
     width: '100%',
     height: 180,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: mode === "dark" 
+      ? 'rgba(0, 0, 0, 0.3)'
+      : 'rgba(107, 114, 128, 0.1)',
   },
   image: {
     width: '100%',
@@ -166,7 +190,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(10, 26, 47, 0.8)',
+    backgroundColor: mode === "dark"
+      ? 'rgba(10, 26, 47, 0.8)'
+      : 'rgba(249, 250, 251, 0.95)',
   },
   noImageGradient: {
     width: 80,
@@ -178,7 +204,7 @@ const styles = StyleSheet.create({
   },
   noImageText: {
     fontSize: 12,
-    color: '#79818dff',
+    color: theme.secondaryText,
     fontWeight: '500',
   },
   favoriteButtonTop: {
@@ -189,14 +215,18 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   favoriteIconWrapper: {
-    backgroundColor: 'rgba(10, 26, 47, 0.8)',
+    backgroundColor: mode === "dark"
+      ? 'rgba(10, 26, 47, 0.9)'
+      : 'rgba(255, 255, 255, 0.95)',
     width: 40,
     height: 40,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(75, 85, 99, 0.3)',
+    borderWidth: 2,
+    borderColor: mode === "dark"
+      ? 'rgba(75, 85, 99, 0.3)'
+      : 'rgba(107, 114, 128, 0.3)',
   },
   favoriteIconWrapperActive: {
     backgroundColor: '#22C55E',
@@ -204,6 +234,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
+    backgroundColor: theme.secondaryBackground,
   },
   contentRow: {
     flexDirection: 'row',
@@ -216,7 +247,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.text,
     marginBottom: 8,
   },
   infoRow: {
@@ -228,9 +259,9 @@ const styles = StyleSheet.create({
   infoBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+    backgroundColor: theme.secondaryIcon + '15',
     borderWidth: 1,
-    borderColor: 'rgba(0, 123, 255, 0.2)',
+    borderColor: theme.secondaryIcon + '30',
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -238,12 +269,12 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 11,
-    color: '#79818dff',
+    color: theme.secondaryText,
     fontWeight: '500',
   },
   description: {
     fontSize: 12,
-    color: '#79818dff',
+    color: theme.secondaryText,
     lineHeight: 18,
     marginBottom: 8,
   },
@@ -251,9 +282,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+    backgroundColor: theme.secondaryIcon + '15',
     borderWidth: 1,
-    borderColor: 'rgba(0, 123, 255, 0.3)',
+    borderColor: theme.secondaryIcon + '40',
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -261,7 +292,7 @@ const styles = StyleSheet.create({
   },
   teamText: {
     fontSize: 10,
-    color: '#007BFF',
+    color: theme.secondaryIcon,
     fontWeight: '600',
   },
   actionButton: {
@@ -275,6 +306,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(75, 85, 99, 0.3)',
+    borderColor: mode === "dark"
+      ? 'rgba(75, 85, 99, 0.3)'
+      : theme.secondaryText + '30',
   },
 });

@@ -1,22 +1,26 @@
 import React from "react";
+import axios from "axios";
+import { LinearGradient } from "expo-linear-gradient";
+import { Formik } from "formik";
 import {
-  View,
+  ActivityIndicator,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-  Image,
+  View,
 } from "react-native";
-import { Formik } from "formik";
+import { useDispatch, useSelector } from "react-redux";
 import * as Yup from "yup";
-import axios from "axios";
-import { useDispatch } from "react-redux";
 import { loginSuccess } from "../redux/slices/authSlice";
-import { LinearGradient } from "expo-linear-gradient";
+import themeConfig from "../redux/themeConfig";
 
 export default function LoginScreen({ navigation }) {
   const dispatch = useDispatch();
+  const theme = useSelector((state) => state.theme.mode);
+  const currentTheme = themeConfig[theme];
+  const styles = createStyles(currentTheme, theme);
 
   const LoginSchema = Yup.object().shape({
     username: Yup.string().required("Required"),
@@ -34,7 +38,7 @@ export default function LoginScreen({ navigation }) {
     } catch (err) {
       setSubmitting(false);
       alert(
-        "Login failed. Use sample credentials: username: kminchelle password: 0lelplR"
+        "Login failed."
       );
     }
   };
@@ -43,7 +47,7 @@ export default function LoginScreen({ navigation }) {
     <View style={styles.container}>
       {/* Gradient Background */}
       <LinearGradient
-        colors={["#0A1A2F", "#000814"]}
+        colors={currentTheme.gradient}
         style={styles.gradientBg}
       />
 
@@ -85,7 +89,7 @@ export default function LoginScreen({ navigation }) {
                     <TextInput
                       style={styles.input}
                       placeholder="Enter your username"
-                      placeholderTextColor="#4B5563"
+                      placeholderTextColor={currentTheme.secondaryText}
                       onChangeText={handleChange("username")}
                       onBlur={handleBlur("username")}
                       value={values.username}
@@ -104,7 +108,7 @@ export default function LoginScreen({ navigation }) {
                     <TextInput
                       style={styles.input}
                       placeholder="Enter your password"
-                      placeholderTextColor="#4B5563"
+                      placeholderTextColor={currentTheme.secondaryText}
                       secureTextEntry
                       onChangeText={handleChange("password")}
                       onBlur={handleBlur("password")}
@@ -168,141 +172,143 @@ export default function LoginScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000814",
-  },
-  gradientBg: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  },
-  contentContainer: {
-    flex: 1,
-    paddingHorizontal: 24,
-    justifyContent: "center",
-  },
-  brandSection: {
-    alignItems: "center",
-    marginBottom: 48,
-  },
-  logoCircle: {
-    width: 70,
-    height: 70,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  logoImage: {
-    width: "500%",
-    height: "500%",
-  },
-  brandName: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    marginBottom: 8,
-  },
-  tagline: {
-    fontSize: 14,
-    color: "#4B5563",
-    letterSpacing: 1,
-  },
-  formContainer: {
-    backgroundColor: "rgba(10, 26, 47, 0.5)",
-    borderRadius: 24,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: "rgba(0, 123, 255, 0.2)",
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#E5E7EB",
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    backgroundColor: "rgba(245, 247, 250, 0.05)",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(75, 85, 99, 0.3)",
-  },
-  input: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: "#E5E7EB",
-  },
-  errorText: {
-    fontSize: 12,
-    color: "#007BFF",
-    marginTop: 4,
-    marginLeft: 4,
-  },
-  forgotButton: {
-    alignSelf: "flex-end",
-    marginBottom: 24,
-  },
-  forgotText: {
-    fontSize: 14,
-    color: "#18E7F2",
-    fontWeight: "500",
-  },
-  loginButton: {
-    borderRadius: 12,
-    overflow: "hidden",
-    shadowColor: "#007BFF",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  loginGradient: {
-    paddingVertical: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loginText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
-    letterSpacing: 0.5,
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "rgba(75, 85, 99, 0.3)",
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    fontSize: 12,
-    color: "#4B5563",
-    fontWeight: "500",
-  },
-  registerButton: {
-    alignItems: "center",
-  },
-  registerText: {
-    fontSize: 14,
-    color: "#E5E7EB",
-  },
-  registerLink: {
-    color: "#007BFF",
-    fontWeight: "bold",
-  },
-});
+const createStyles = (theme, mode) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.secondaryBackground,
+    },
+    gradientBg: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+    },
+    contentContainer: {
+      flex: 1,
+      paddingHorizontal: 24,
+      justifyContent: "center",
+    },
+    brandSection: {
+      alignItems: "center",
+      marginBottom: 48,
+    },
+    logoCircle: {
+      width: 70,
+      height: 70,
+      justifyContent: "center",
+      alignItems: "center",
+      marginBottom: 16,
+      shadowColor: theme.secondaryIcon,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: mode === "dark" ? 0.5 : 0.3,
+      shadowRadius: 16,
+      elevation: 8,
+    },
+    logoImage: {
+      width: "500%",
+      height: "500%",
+    },
+    tagline: {
+      fontSize: 14,
+      color: theme.secondaryText,
+      letterSpacing: 1,
+    },
+    formContainer: {
+      backgroundColor: theme.secondaryBackground,
+      borderRadius: 24,
+      padding: 24,
+      borderWidth: mode === "dark" ? 1 : 2,
+      borderColor: theme.secondaryIcon + "30",
+      shadowColor: theme.secondaryIcon,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: mode === "dark" ? 0.2 : 0.15,
+      shadowRadius: 12,
+      elevation: 4,
+    },
+    inputGroup: {
+      marginBottom: 20,
+    },
+    label: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: theme.text,
+      marginBottom: 8,
+    },
+    inputWrapper: {
+      backgroundColor:
+        mode === "dark" ? "rgba(245, 247, 250, 0.05)" : theme.background,
+      borderRadius: 12,
+      borderWidth: mode === "dark" ? 1 : 2,
+      borderColor: theme.secondaryText + "40",
+    },
+    input: {
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 16,
+      color: theme.text,
+    },
+    errorText: {
+      fontSize: 12,
+      color: theme.secondaryIcon,
+      marginTop: 4,
+      marginLeft: 4,
+    },
+    forgotButton: {
+      alignSelf: "flex-end",
+      marginBottom: 24,
+    },
+    forgotText: {
+      fontSize: 14,
+      color: theme.icon,
+      fontWeight: "500",
+    },
+    loginButton: {
+      borderRadius: 12,
+      overflow: "hidden",
+      shadowColor: theme.secondaryIcon,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    loginGradient: {
+      paddingVertical: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    loginText: {
+      color: "#FFFFFF",
+      fontSize: 16,
+      fontWeight: "bold",
+      letterSpacing: 0.5,
+    },
+    divider: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginVertical: 24,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: theme.secondaryText + "40",
+    },
+    dividerText: {
+      marginHorizontal: 16,
+      fontSize: 12,
+      color: theme.secondaryText,
+      fontWeight: "500",
+    },
+    registerButton: {
+      alignItems: "center",
+    },
+    registerText: {
+      fontSize: 14,
+      color: theme.text,
+    },
+    registerLink: {
+      color: theme.secondaryIcon,
+      fontWeight: "bold",
+    },
+  });

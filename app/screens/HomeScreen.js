@@ -8,8 +8,10 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    ScrollView,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { Feather } from "@expo/vector-icons";
 import { getPlayers } from "../api/sportsApi";
 import Header from "../components/Header";
 import ItemCard from "../components/ItemCard";
@@ -18,8 +20,9 @@ import themeConfig from "../redux/themeConfig";
 
 export default function HomeScreen({ navigation }) {
   const [players, setPlayers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [team, setTeam] = useState("Arsenal");
+  const [loading, setLoading] = useState(false);
+  const [team, setTeam] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const favourites = useSelector((s) => s.favourites);
   const dispatch = useDispatch();
@@ -27,15 +30,35 @@ export default function HomeScreen({ navigation }) {
   const currentTheme = themeConfig[theme];
 
   const fetchPlayers = async () => {
+    if (!team.trim()) {
+      setHasSearched(false);
+      setPlayers([]);
+      return;
+    }
+    
     setLoading(true);
+    setHasSearched(true);
     const data = await getPlayers(team);
     setPlayers(data);
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchPlayers();
+    if (team.trim()) {
+      const delaySearch = setTimeout(() => {
+        fetchPlayers();
+      }, 500);
+
+      return () => clearTimeout(delaySearch);
+    } else {
+      setHasSearched(false);
+      setPlayers([]);
+    }
   }, [team]);
+
+  const handleQuickSearch = (teamName) => {
+    setTeam(teamName);
+  };
 
   const toggleFav = (player) => {
     const exists = favourites.find((p) => p.idPlayer === player.idPlayer);
@@ -43,16 +66,14 @@ export default function HomeScreen({ navigation }) {
     else dispatch(addFavourite(player));
   };
 
-  const styles = createStyles(currentTheme);
+  const styles = createStyles(currentTheme, theme);
 
   return (
     <View style={styles.container}>
-      {/* Gradient Background */}
       <LinearGradient colors={currentTheme.gradient} style={styles.gradientBg} />
 
       <Header />
 
-      {/* Search Section */}
       <View style={styles.searchSection}>
         <View style={styles.searchHeader}>
           <Text style={styles.searchTitle}>Discover Players</Text>
@@ -96,13 +117,12 @@ export default function HomeScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Quick Filter Chips */}
         <View style={styles.chipsContainer}>
           {["Arsenal", "Barcelona", "Real Madrid", "Manchester United"].map(
             (teamName) => (
               <TouchableOpacity
                 key={teamName}
-                onPress={() => setTeam(teamName)}
+                onPress={() => handleQuickSearch(teamName)}
                 style={[styles.chip, team === teamName && styles.chipActive]}
               >
                 <Text
@@ -119,7 +139,6 @@ export default function HomeScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Content Section */}
       {loading ? (
         <View style={styles.loadingContainer}>
           <View style={styles.loadingBox}>
@@ -127,35 +146,72 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.loadingText}>Loading players...</Text>
           </View>
         </View>
-      ) : players.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptyBox}>
-            <Text style={styles.emptyIcon}>🔍</Text>
-            <Text style={styles.emptyTitle}>No Players Found</Text>
-            <Text style={styles.emptyText}>
-              No players found for "{team}"{"\n"}
-              Try searching for a different team
-            </Text>
-            <TouchableOpacity
-              style={styles.emptyButton}
-              onPress={() => setTeam("Arsenal")}
-            >
-              <LinearGradient
-                colors={theme === "dark" ? ["#007BFF", "#00D26A"] : ["#3B82F6", "#FF9F40"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.emptyButtonGradient}
-              >
-                <Text style={styles.emptyButtonText}>Try Arsenal</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+      ) : !hasSearched ? (
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}>
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyBox}>
+              <View style={styles.emptyIconWrapper}>
+                <View style={styles.emptyIconBg}>
+                  <Feather name="search" size={48} color={currentTheme.secondaryIcon} />
+                </View>
+              </View>
+              <Text style={styles.emptyTitle}>Start Your Search</Text>
+              <Text style={styles.emptyText}>
+                Enter a team name above or select{"\n"}
+                from popular teams below to discover players
+              </Text>
+
+              <View style={styles.popularTeamsWrapper}>
+                <Text style={styles.popularTeamsLabel}>Popular Teams:</Text>
+                <View style={styles.popularTeamsGrid}>
+                  {["Arsenal", "Barcelona", "Real Madrid", "Manchester United"].map(
+                    (teamName) => (
+                      <TouchableOpacity
+                        key={teamName}
+                        onPress={() => handleQuickSearch(teamName)}
+                        style={styles.popularTeamButton}
+                      >
+                        <Text style={styles.popularTeamText}>{teamName}</Text>
+                      </TouchableOpacity>
+                    )
+                  )}
+                </View>
+              </View>
+            </View>
           </View>
-        </View>
+        </ScrollView>
+      ) : players.length === 0 ? (
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}>
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyIcon}>🔍</Text>
+              <Text style={styles.emptyTitle}>No Players Found</Text>
+              <Text style={styles.emptyText}>
+                No players found for "{team}"{"\n"}
+                Try searching for a different team
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyButton}
+                onPress={() => handleQuickSearch("Arsenal")}
+              >
+                <LinearGradient
+                  colors={theme === "dark" ? ["#007BFF", "#007BFF"] : ["#3B82F6", "#3B82F6"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.emptyButtonGradient}
+                >
+                  <Text style={styles.emptyButtonText}>Try Arsenal</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
       ) : (
         <View style={styles.listContainer}>
           <Text style={styles.resultsText}>
-            {players.length} player{players.length !== 1 ? "s" : ""} found
+            {players.length} player{players.length !== 1 ? "s" : ""} found for {team}
           </Text>
+
           <FlatList
             data={players}
             keyExtractor={(item) =>
@@ -178,7 +234,7 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-const createStyles = (theme) => StyleSheet.create({
+const createStyles = (theme, mode) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.secondaryBackground,
@@ -323,6 +379,8 @@ const createStyles = (theme) => StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
+    paddingTop:40,
+    
   },
   emptyBox: {
     backgroundColor: theme.secondaryBackground,
@@ -331,29 +389,79 @@ const createStyles = (theme) => StyleSheet.create({
     borderRadius: 24,
     padding: 32,
     alignItems: "center",
-    maxWidth: 320,
+    maxWidth: 400,
     shadowColor: theme.secondaryIcon,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 4,
   },
+  emptyIconWrapper: {
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  emptyIconBg: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: theme.secondaryIcon + '40',
+    backgroundColor: theme.secondaryIcon + '20',
+  },
   emptyIcon: {
     fontSize: 48,
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     color: theme.text,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   emptyText: {
     fontSize: 14,
     color: theme.secondaryText,
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: 22,
     marginBottom: 24,
+  },
+  popularTeamsWrapper: {
+    width: '100%',
+    marginTop: 8,
+  },
+  popularTeamsLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  popularTeamsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  popularTeamButton: {
+    backgroundColor: theme.secondaryIcon,
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    minWidth: '42%',
+    alignItems: 'center',
+    shadowColor: theme.secondaryIcon,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  popularTeamText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: 'bold',
   },
   emptyButton: {
     borderRadius: 12,
